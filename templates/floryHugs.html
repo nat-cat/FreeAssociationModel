@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+ 
+{% block head %}
+	{{ super() }}
+{% endblock %}
+
+{% block content %}
+	<div id = "Header" style="text-align: center;">
+		<h1> Nate's Graph Generator </h1>
+	</div>
+
+		<div class="row">
+			<h2> About </h2>
+		</div>
+<div class = "introduction">
+	<div align="center" class="row">
+
+<!-- Para1 --!>
+		<h4> Nate's Flory-Huggins Solution Theory</h4>
+	</div>
+	<div class = "row">
+		<p> This is Nate's version of the Flory-Huggins Model.  This will soon be replaced with the Free Associaton model.		<p> 
+
+<!-- Para2 --!>
+	<div align="center" class="row">
+		<h4> Limitations of Nate's Model</h4>
+			<p> Here should be an explanation of the limitations of the given model.
+	</div>
+
+<hr>
+<!-- Para3 --!>
+	<div class="row">
+		<h4> Using this App</h4>
+			<p> What the code does and how to use it.  </p>
+	</div>
+
+
+	</div>
+</div>
+	{% if error %}
+		<p class=error><strong>Error:</strong> {{ error }}
+	{% endif %}
+	<form data-abide action="/floryHugsplot" method="post">
+		<div class="row">
+	<fieldset>
+		<legend> Input Parameters </legend>
+
+					<div class="large-4 columns">
+						<label>Monomers of Species A
+							<input required pattern="number" type="text" name="NFA" placeholder="42" />
+							<small class="error"> Please input a valid number.</small>
+						</label>
+					</div>
+
+					<div class="large-4 columns">
+						<label>Monomers of Species B
+							<input required pattern="number" type="text" name="NFB" placeholder="42" />
+							<small class="error"> Please input a valid number.</small>
+						</label>
+					</div>
+
+
+					<div class="large-4 columns">
+						<label> Chi Value
+							<input required pattern="number" type="text" name="chivalue" placeholder="0.42" />
+							<small class="error"> Please input a valid number.</small>
+						</label>
+					</div>
+
+		</div>
+
+			<div class="row">
+					<div align="center">
+						<input class="button" type="submit" name="natesbutton" value="Generate Profile!" />
+					</div>
+			</div>
+		</form>
+<div class="row">
+<hr>
+<p>1. Flory, P.J., "Thermodynamics of high polymer solutions" The Journal of Chemical Physics 10, 51 (1942); doi: 10.1063/1.1723621</p>
+   
+<p>2. "Huggins, M.L., "Solutions of Long Chain Compounds" The Journal of Chemical Physics 9, 440 (1941); doi: 10.1063/1.1750930</p>
+</div>
+
+{% endblock %}
+
