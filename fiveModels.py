@@ -12,7 +12,7 @@ from numpy import arange,asarray,zeros
 from SLCT import *
 from VO import *
 from FH import *
-from nateFunctions import *
+from optimization import *
 from structurefactor import structure_factor
 import simpleA
 
@@ -468,19 +468,18 @@ def plot():
 			
 			return render_template("exampleplots.html",critphi=critvals,list_of_plots=list_of_plots,zipped=zipped)
 
-########################################################      New Code Here      ##############################################################
+########################################################      New Code Here      #############################################################
 @app.route('/floryHugsplot', methods=['GET','POST'])
 def floryHugsplot(): #plots nate's version of the flory-huggins model
 	if request.method == 'POST':
-		print 'got to setup page'
 		na = float(request.form['NFA'])
 		nb = float(request.form['NFB'])
 		chi = float(request.form['chivalue'])
 
 		if request.form['natesbutton'] == 'Generate Profile!':
-			print 'initiate generation'
 
-			#####Set up graph for Energy lines##### (enthalpy, entropy, free energy)
+			'''Set up top graph for Energy lines (enthalpy, entropy, free energy)'''
+
 			fig = setupGraph(na,nb,chi)
 
 			#Graph setup and specifications
@@ -500,42 +499,48 @@ def floryHugsplot(): #plots nate's version of the flory-huggins model
 			plot_dict['json'] = json01
 			list_of_plots.append(plot_dict)
 
-			print 'setup energy graphs'
-			#####Set up graph for Binodal and Spinodal lines#####
-			#find critical point
-			crit_chi = .5*((1/(na**.5) + 1/(nb**.5))**2)
-			if na == nb:
-				crit_phi = 0.5
-			else:
-				crit_phi = (-nb + sqrt(na*nb) )/(na-nb)
 
-			"""Run Optimization"""
-			x = arange(0.05,0.95,0.001)
-			spinodal = (.5*(1./(na*x) + 1./(nb-nb*x)))
-			spinodal = spinodal
 
-			if flipper == 1:
-				x = 1 - x
-
+			"""Set up bottom graph for Binodal and Spinodal lines"""
 
 			fig = Figure()
 			fig.set_facecolor('white')
 			axis = fig.add_subplot(1, 1, 1,axisbg='#f5f5f5')
 			axis.set_xlabel('Volume Fraction')
-			axis.set_ylabel('Free Energy')
+			axis.set_ylabel('Chi value, X')
 			axis.set_title('Nate\'s FH Model')
 
 			canvas = FigureCanvas(fig)
 			plugins.connect(fig, plugins.MousePosition())
 
-			phi,y2 =  NR(na,nb,crit_chi,flipper)
 
-			"""Incorporate Chi Value for demo"""
-			#Convert list to np array
-			y2 = np.asarray(y2)
-			spinodal = np.asarray(spinodal)
-			spinline = axis.plot(x,spinodal,'r',lw=2,label="Spinodal") 
-			binline = axis.plot(phi,y2,'b',lw=2,label="Binodal")
+			if na==nb: #find critical phi
+				xT = .5
+			else:
+				xT = (sqrt(na*nb)-nb)/(na-nb) #critical phi value
+
+			chiCrit = ((sqrt(na)+sqrt(nb))**2)/(2*na*nb) #critical chi value
+
+			totalCoords = binodalCurve()
+
+			binX = []
+			binY = []
+			for coord in totalCoords: #create lists of the x points on binX and corresponding y points on the same indices of binY (make this comment better)
+				binX.append(coord[0])
+				binY.append(coord[1])
+
+			binX = np.asarray(binX)#Convert list to np array
+			binY = np.asarray(binY)#Convert list to np array
+
+			spinY = []
+			for phi in arange(.01,.99,.01): #make a list of coordinates for the spinodal curve
+				chiS = s(phi)
+				spinY.append(chiS)
+
+			spinY = np.asarray(spinY)#Convert list to np array
+
+			spinline = axis.plot(binX,spinY,'r',lw=2,label="Spinodal") 
+			binline = axis.plot(binX,binY,'b',lw=2,label="Binodal")
 			axis.legend()
 
 			#Make the plot html/javascript friendly
@@ -548,12 +553,20 @@ def floryHugsplot(): #plots nate's version of the flory-huggins model
 			plot_dict['json'] = json02
 			list_of_plots.append(plot_dict)
 
+			#truncate unnecessary decimal places for the data table
+			for i in xrange(len(binX)):
+				binX[i] = '%.3f' % binX[i]
+				binY[i] = '%.3f' % binY[i]
+				spinY[i] = '%.3f' % spinY[i]
+			xT = '%.4f' % xT
+			chiCrit = '%.4f' % chiCrit
+
+
 			#Generate table
-			zipped = zip(x,spinodal,y2)
+			zipped = zip(binX,spinY,binY) #originally phi,spinodal_chi,binodal_chi
 
 			#Critical point
-			critvals = [crit_phi,crit_chi]
-
+			critvals = [xT,chiCrit]
 
 			return render_template("exampleplots.html",critphi=critvals,list_of_plots=list_of_plots,zipped=zipped)
 
@@ -575,7 +588,6 @@ def setupGraph(na,nb,chi):
 	axis.set_title('Nate\'s Energy Diagram')
 
 	"""Run Optimization"""
-	"""Need to move these lines it's own function"""
 	phi = arange(0.0001,0.99,0.001)
 	h = np.zeros(( len(phi) ))
 	s = np.zeros(( len(phi) ))

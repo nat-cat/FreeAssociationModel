@@ -37,7 +37,7 @@ def fun(x,na,nb,phi1):
 			- log(1-phi1)/nb + log(phi1)/na) - ((x[0]/na)*log(x[0])
 			+ ((1-x[0])/nb)*log(1-x[0]) + x[1]*x[0]*(1-x[0]))
 			+ ((phi1/na)*log(phi1) + ((1-phi1)/nb)*log(1-phi1) + x[1]*(phi1)*(1-phi1))
-			])	
+			])
 
 
 def jac(x,na,nb,phi1):
@@ -56,7 +56,7 @@ def jac(x,na,nb,phi1):
 			- 2*x[1]*phi1 + 2*x[1]*x[0], (x[0] - phi1)**2]])
 
 
-def NR(na,nb,crit_chi,flipper):
+def NR2(na,nb,crit_chi,flipper):
 		" Newton Raphson solver for the binary mixture"
 		# Set up parameters, initial guesses, formatting, initializing etc.
 
